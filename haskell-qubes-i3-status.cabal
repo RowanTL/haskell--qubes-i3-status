@@ -73,6 +73,7 @@ executable haskell-qubes-i3-status
                     , filepath
                     , split
                     , containers
+                    , regex-tdfa
 
     -- Directories containing source files.
     hs-source-dirs:   app

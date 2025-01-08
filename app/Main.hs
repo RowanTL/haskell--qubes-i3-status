@@ -2,11 +2,11 @@ module Main where
 
 import System.Process
 import System.IO
--- import GHC.IO.Handle
 import Data.Time
 import Data.List.Split
 import Data.Map
 import Data.Bits
+import Text.Regex.TDFA
 
 -- Gonna have to save this for last call
 -- Have a list of 3 tuple of Strings: (name, fullText, Maybe color)
@@ -40,7 +40,8 @@ statusBattery = do
   hClose hChargeNow
   hClose hVoltageNow
   hClose hChargeFull
-  let percentage = 100 * (accumCalc voltageNow chargeNow + accumCalc voltageNow chargeFull) `div` accumCalc voltageNow chargeFull -- Double calculate full charge here :(
+  let fullCharge = accumCalc voltageNow chargeFull
+  let percentage = 100 * (accumCalc voltageNow chargeNow + fullCharge) `div` fullCharge -- Double calculate full charge here :(
   jsonOutput "bat" ("Bat: " <> show percentage <> "%") (batteryColor percentage)
   where
     accumCalc :: String -> String -> Int
@@ -90,16 +91,19 @@ statusDisk = do
       | otherwise = show free <> "Bytes"
 
 -- statusVolume :: IO String
--- statusVolume 
+statusVolume = do
+  (_, Just hout, _, _) <- createProcess (proc "amixer" ["sget", "Master"]){ std_out = CreatePipe } 
+  volumeLines <- hGetContents' hout
+  let volumeMatches = getAllTextMatches (volumeLines =~ "Playback \\d+ \\[\\d+%\\] \\[(on|off)\\]") :: [String]
+  return volumeLines
+  -- undefined
 
 
 main :: IO ()
 main = do
   print "{\"version\": 1}"
   -- hflush stdout
-
   -- print a [ for starting the endless array
   print "["
-  
   -- send another [] this time to simplify the loop??
   print "[]"
