@@ -71,6 +71,8 @@ executable haskell-qubes-i3-status
                     , process
                     , time
                     , filepath
+                    , split
+                    , containers
 
     -- Directories containing source files.
     hs-source-dirs:   app
