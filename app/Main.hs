@@ -8,8 +8,6 @@ import Data.Map
 import Data.Bits
 import Text.Regex.TDFA
 
--- Gonna have to save this for last call
--- Have a list of 3 tuple of Strings: (name, fullText, Maybe color)
 -- I love imperative programming
 jsonOutput :: String -> String -> Maybe String -> IO String
 jsonOutput name fullText color =
@@ -90,15 +88,30 @@ statusDisk = do
       | free >= 1 `shift` 10 = show (free `shift` (-10)) <> "K"
       | otherwise = show free <> "Bytes"
 
+-- Not gonna finish this function
+-- I do not feel like going through regex hell
+-- If there's a better amixer command, that would be great
 -- statusVolume :: IO String
-statusVolume = do
-  (_, Just hout, _, _) <- createProcess (proc "amixer" ["sget", "Master"]){ std_out = CreatePipe } 
-  volumeLines <- hGetContents' hout
-  let volumeMatches = getAllTextMatches (volumeLines =~ "Playback \\d+ \\[\\d+%\\] \\[(on|off)\\]") :: [String]
-  return volumeLines
+-- statusVolume = do
+  -- (_, Just hout, _, _) <- createProcess (proc "amixer" ["sget", "Master"]){ std_out = CreatePipe } 
+  -- volumeLines <- hGetContents' hout
+  -- let volumeMatches = getAllTextMatches (volumeLines =~ "Playback \\d+ \\[\\d+%\\] \\[(on|off)\\]") :: [String]
+  -- return volumeLines
   -- undefined
 
+-- Could implement a state with main loop function args and passed integer
+-- Do the suboptimal and thing and run these every iteration lol
+mainloop :: IO ()
+mainloop = do
+  qubesOutput <- statusQubes
+  diskOutput <- statusDisk
+  -- batOutput <- statusBattery -- do not feel like testing this in qubes
+  loadOutput <- statusLoad
+  -- volumeOutput <- statusVolume
+  print $ ",[" <> qubesOutput <> ", " <> diskOutput <>  ", " <> loadOutput <> "]"
+  mainloop
 
+-- If only xmonad worked well with qubes :(
 main :: IO ()
 main = do
   print "{\"version\": 1}"
@@ -107,3 +120,5 @@ main = do
   print "["
   -- send another [] this time to simplify the loop??
   print "[]"
+
+  mainloop
